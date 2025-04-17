@@ -126,6 +126,108 @@ python main.py
 3. 在`.env`文件中添加新平台所需的配置项
 4. 在`main.py`的`setup_listeners`方法中添加新平台的处理逻辑
 
+## 🖥️ 使用Cursor IDE开发指南
+
+[Cursor](https://cursor.sh/)是一款强大的AI辅助编程IDE，可以帮助你更快地开发和扩展本项目。下面介绍如何使用Cursor添加新的策略类：
+
+### 添加新的策略类
+
+假设你想添加一个新的消息处理策略，可以按照以下步骤操作：
+
+1. **在Cursor中打开项目**
+   - 打开Cursor
+   - 点击"打开文件夹"，选择刮刀机器人项目目录
+
+2. **创建策略类文件**
+   - 使用Cursor的文件浏览器，在`handlers`目录下创建一个新文件，例如`strategy.py`
+   - 也可以使用快捷键`Cmd+N`(Mac)或`Ctrl+N`(Windows)创建新文件
+
+3. **编写策略类代码**
+   - 在Cursor中，你可以使用AI辅助功能来生成代码框架
+   - 在编辑器中输入提示，如：`# 创建一个消息处理策略类`，然后按`Alt+/`触发AI建议
+
+4. **实现策略接口**
+   - 例如，编写一个简单的策略类：
+
+```python
+from handlers.handler_interface import HandlerInterface
+from models.message import Message
+from utils.logger import setup_logger
+
+logger = setup_logger("keyword_strategy")
+
+class KeywordStrategy(HandlerInterface):
+    """
+    关键词处理策略：当消息包含特定关键词时触发相应操作
+    """
+    
+    def __init__(self, keywords=None, actions=None):
+        self.keywords = keywords or []
+        self.actions = actions or {}
+        
+    def handle_message(self, message: Message) -> None:
+        """处理消息"""
+        logger.info(f"KeywordStrategy处理消息: {message.content[:30]}...")
+        
+        # 检查消息是否包含关键词
+        for keyword in self.keywords:
+            if keyword.lower() in message.content.lower():
+                action = self.actions.get(keyword)
+                if action:
+                    logger.info(f"触发关键词'{keyword}'的动作")
+                    action(message)
+                break
+```
+
+5. **在Cursor中注册策略**
+   - 打开`main.py`文件
+   - 找到`setup_handlers`方法
+   - 添加新策略类的导入和注册代码：
+
+```python
+# 在文件顶部导入
+from handlers.strategy import KeywordStrategy
+
+# 在setup_handlers方法中添加
+def setup_handlers(self) -> None:
+    """设置消息处理器"""
+    
+    # ... 现有代码 ...
+    
+    # 添加关键词策略
+    keyword_strategy = KeywordStrategy(
+        keywords=["hello", "help", "info"],
+        actions={
+            "hello": lambda msg: logger.info(f"向{msg.author_name}问好"),
+            "help": lambda msg: logger.info("提供帮助信息"),
+            "info": lambda msg: logger.info("提供项目信息")
+        }
+    )
+    
+    # 注册策略处理器
+    self.handler.register_global_handler(keyword_strategy.handle_message)
+```
+
+6. **使用Cursor的AI代码检查功能**
+   - 写完代码后，使用Cursor的AI检查功能找出潜在问题
+   - 在编辑器中右键，选择"AI检查代码"或使用快捷键 `Alt+Shift+C`
+
+7. **保存并测试**
+   - 保存所有文件（Cmd+S 或 Ctrl+S）
+   - 运行程序测试新策略
+
+### Cursor IDE使用技巧
+
+1. **快速导航**：按`Cmd+P`(Mac)或`Ctrl+P`(Windows)可以快速搜索并打开项目中的文件
+
+2. **智能代码补全**：Cursor会分析项目代码，提供上下文相关的智能代码补全
+
+3. **AI解释代码**：选中代码后按`Alt+Shift+E`，AI会解释选中的代码功能
+
+4. **代码重构**：选中代码后右键，选择"AI重构代码"，可以优化代码结构
+
+5. **查找引用**：右键点击变量或函数名，选择"查找所有引用"，快速定位使用位置
+
 
 ## 📄 许可证
 
